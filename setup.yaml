@@ -1,0 +1,30 @@
+---
+- name: Hosts setup for oscap scan 
+  hosts: all
+  gather_facts: true
+  strategy: free
+  become: true
+  vars:
+    data_stream_home: "files/ssg/"
+  tasks:
+    - name: Install necesary packages on Red Hat base families
+      package:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - openscap-scanner
+        - scap-security-guide
+      when: ansible_facts['os_family'] == "RedHat"
+
+    - name: Install necesary packages on Debian base systems
+      package:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - libopenscap8
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Copy datastream
+      copy:
+        src: "{{ data_stream_home }}{{ ssg_file }}"
+        dest: "{{ ssg_dir }}"
